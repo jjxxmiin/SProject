@@ -32,7 +32,3 @@
 ![이미지3](https://github.com/jjeamin/SProject/blob/master/image/3.jpg)
 
 * * *
-
-## 기대효과 및 활용방안
-
-* * *
