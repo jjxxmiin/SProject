@@ -27,9 +27,8 @@
 * * *
 
 ## 제안하는 어플리케이션의 구성도(그림 및 설명)
-
-* * *
-
-## 기대효과 및 활용방안
+![이미지1](https://github.com/jjeamin/SProject/blob/master/image/1.jpg)
+![이미지2](https://github.com/jjeamin/SProject/blob/master/image/2.jpg)
+![이미지3](https://github.com/jjeamin/SProject/blob/master/image/3.jpg)
 
 * * *
