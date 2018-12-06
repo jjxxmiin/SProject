@@ -1,7 +1,9 @@
 ﻿# SProject
 
 ## 물음표조 시스템 프로그래밍 프로젝트 입니다.
-
+- 정재민
+- 김형훈
+- 이종학
 
 
 # 서로 경쟁하는 벽돌게임
@@ -32,3 +34,5 @@
 ![이미지3](https://github.com/jjeamin/SProject/blob/master/image/3.jpg)
 
 * * *
+
++
