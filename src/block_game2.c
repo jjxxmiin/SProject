@@ -61,18 +61,24 @@ typedef struct _BALL {	//공의 속성
 
 BAR g_Bar;
 BALL g_Ball;
+int g_StateTable[4][6] = {
+	{3,2,-1,-1,-1,4},
+	{-1,5,4,-1,-1,-1},
+	{-1,-1,1,0,5,-1},
+	{-1,-1,-1,-1,2,1}
+};
 
 void init() {
 	g_Bar.nY = 13;
-	g_Bar.nX[0] = 30; //바의 위치
+	g_Bar.nX[0] = 30;
 	g_Bar.nX[1] = 32;
 	g_Bar.nX[2] = 34;
 	g_Bar.MoveTime = 80;
 	g_Bar.OldTime = clock();
 
 	g_Ball.nX = g_Bar.nX[1];
-	g_Ball.nY = g_Bar.nY - 1;
-	g_Ball.nReady = 1; //공의 위치
+	g_Ball.nY = g_Bar.nY-1;
+	g_Ball.nReady = 1; 
 	g_Ball.nDirect = TOP;
 	g_Ball.OldTime = clock();
 	g_Ball.MoveTime = 100;
@@ -83,111 +89,140 @@ void init() {
 	curs_set(FALSE);
 }
 
+int Collision(int nX,int nY) {
+	if(nY < 0) {
+		g_Ball.nDirect = g_StateTable[0][g_Ball.nDirect];
+		return 1;
+	}
+	if(nX > 78) {
+		g_Ball.nDirect = g_StateTable[1][g_Ball.nDirect];
+		return 1;
+	}
+	if(nY > 24) {
+		g_Ball.nDirect = g_StateTable[2][g_Ball.nDirect];
+		return 1;
+	}
+	if(nX < 0) {
+		g_Ball.nDirect = g_StateTable[3][g_Ball.nDirect];
+		return 1;
+	}
+	return 0;
+}
+
 void UpDate() {
 	clock_t CurTime = clock();
-
 	if(g_Ball.nReady == 0) {
 		if(CurTime - g_Ball.OldTime > g_Ball.MoveTime) {
 			g_Ball.OldTime = CurTime;
 
 			switch(g_Ball.nDirect){
 				case TOP :
-					g_Ball.nY--;
+					if(Collision(g_Ball.nX,g_Ball.nY-1) == 0) {
+						g_Ball.nY--;
+					}
 					break;
+
 				case LEFT_TOP :
-					g_Ball.nX++;
-					g_Ball.nY--;
+					if(Collision(g_Ball.nX+1,g_Ball.nY-1) == 0) {
+						g_Ball.nX++;
+						g_Ball.nY--;
+					}
 					break;
 				case LEFT_DOWN :
-					g_Ball.nX++;
-					g_Ball.nY++;
+					if(Collision(g_Ball.nX+1,g_Ball.nY+1) == 0) {
+						g_Ball.nX++;
+						g_Ball.nY++;
+					}
 					break;
 				case DOWN :
-					//g_Ball.nX++;
-					g_Ball.nY++;
+					if(Collision(g_Ball.nX,g_Ball.nY+1) == 0) {
+						g_Ball.nY++;
+					}
 					break;
 				case RIGHT_DOWN :
-					g_Ball.nX--;
-					g_Ball.nY++;
+					if(Collision(g_Ball.nX-1,g_Ball.nY+1) == 0) {
+						g_Ball.nX--;
+						g_Ball.nY++;
+					}
 					break;
 				case RIGHT_TOP :
-					g_Ball.nX--;
-					g_Ball.nY--;
+					if(Collision(g_Ball.nX-1,g_Ball.nY-1) == 0) {
+						g_Ball.nX--;
+						g_Ball.nY--;
+					}
 					break;	
 			}
 
 		}
-		if(g_Ball.nX < 0 || g_Ball.nX > 78 || g_Ball.nY > 24 || g_Ball.nY < 0){
-			g_Ball.nReady = 1;
-			g_Ball.nX = g_Bar.nX[1];
-			g_Ball.nY = g_Bar.nY-1;
-			g_Ball.nDirect = TOP;
-			printf("asdasd");
-		}
-		else {
-			g_Ball.nX = g_Bar.nX[1];
-			g_Ball.nY = g_Bar.nY-1;
-		}
-
 	}
 }
 void Render() {
 	int i;
-	clear();
-	mvprintw(g_Ball.nY,g_Ball.nX,"o");
+	//clear();
 	for(i=0;i<3;i++) {
 		mvprintw(g_Bar.nY,g_Bar.nX[i],"==");
 	}
-	//clear();
+	mvprintw(g_Ball.nY,g_Ball.nX,"o");
 }
 
 int main(int argc,char* argv[]) {
 	int key,nDirect;
 	clock_t CurTime;
+	pid_t pid;
 
 	init();
+
 	while(1) {
+		clear();
 		if(kbhit()) { //키를 입력 받을때
-			key = getch();
+			key = getchar();
 			switch(key) {
 				case 'k':
 					g_Ball.nReady = 0;
-					g_Ball.OldTime = clock();
-					break;
-				case 'j':
-					CurTime = clock();
-					if(CurTime - g_Bar.OldTime > g_Bar.MoveTime) {
-						g_Bar.OldTime = CurTime;
-						if(g_Bar.nX[0] > 0) {
-							g_Bar.nX[0]--;
-							g_Bar.nX[1]--;
-							g_Bar.nX[2]--;
-						}
-					}
 					break;
 				case 'l':
 					CurTime = clock();
 					if(CurTime - g_Bar.OldTime > g_Bar.MoveTime) {
 						g_Bar.OldTime = CurTime;
-						if(g_Bar.nX[2] <= 77) {
+						if(g_Bar.nX[0] > 0) {
 							g_Bar.nX[0]++;
 							g_Bar.nX[1]++;
 							g_Bar.nX[2]++;
 						}
 					}
 					break;
+				case 'j':
+					CurTime = clock();
+					if(CurTime - g_Bar.OldTime > g_Bar.MoveTime) {
+						g_Bar.OldTime = CurTime;
+						if(g_Bar.nX[0] < 77) {
+							g_Bar.nX[0]--;
+							g_Bar.nX[1]--;
+							g_Bar.nX[2]--;
+						}
+					}
+					break;
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case '4':	
 				case '5':
 					nDirect = key - '0';
 					g_Ball.nReady =1;
 					g_Ball.nX=g_Bar.nX[1];
-					g_Ball.nY=g_Bar.nY-1;
+					g_Ball.nY=g_Bar.nY - 1;
 					g_Ball.nDirect = nDirect;
 					g_Ball.OldTime = clock();
+					break;
+				default:
 					break;
 			}
 		}
 		UpDate();
+		usleep(100000);
 		Render();
+		refresh();
 	}
 	return 0;
 }
