@@ -50,6 +50,11 @@ typedef struct _BLOCK {
 	int nX,nY;
 }BLOCK;
 
+typedef struct _USER {
+	int point;
+	int win;
+}USER;
+
 typedef struct _BAR {
 	int nX[3];
 	int nY;
@@ -79,8 +84,12 @@ int g_over = 0;
 BAR g_Bar;
 BALL g_Ball;
 BLOCK g_Block[BC];
+USER user;
 
 void init() {
+	user.point = 0;
+	user.win = 0;
+
 	g_Bar.nY = 30;
 	g_Bar.nX[0] = 30;
 	g_Bar.nX[1] = 34;
@@ -133,7 +142,10 @@ void SetBlock(int BlockCount) { //블록 셋팅
 
 void gameover() {
 	clear();
-	mvprintw(0,0,"Game over");
+	mvprintw(0,0,"=======================================");
+	mvprintw(1,0,"==============Game over================");
+	mvprintw(2,0,"==============score : %d===============",user.point);
+	mvprintw(3,0,"=======================================");
 	refresh();
 }
 
@@ -147,6 +159,7 @@ int Collision(int nX,int nY) { //충돌
 				if(g_Block[i].nX == nX || (g_Block[i].nX + 1) == nX || g_Block[i].nX == nX + 1 || (g_Block[i].nX + 1) == nX + 1) {
 					g_Ball.nDirect = g_BlockState[g_Ball.nDirect];
 					g_Block[i].nLife = 0;
+					user.point++;
 					count++;
 				}
 			}
@@ -324,6 +337,7 @@ int main(int argc,char* argv[]) {
 
 	}
 	gameover(); //게임 오버 메세지
+	sleep(2);
 	getchar(); //아무키 입력시 종료
 	endwin();
 	return 0;
