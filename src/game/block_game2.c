@@ -7,6 +7,8 @@
 #include <termios.h>
 #include <fcntl.h>
 
+#define BC 50
+
 int kbhit(void)
 {
 	struct termios oldt, newt;
@@ -43,6 +45,16 @@ typedef enum _DIRECT {
 	RIGHT_TOP
 }DIRECT;
 
+typedef struct _BLOCK {
+	int nLife;
+	int nX,nY;
+}BLOCK;
+
+typedef struct _USER {
+	int point;
+	int win;
+}USER;
+
 typedef struct _BAR {
 	int nX[3];
 	int nY;
@@ -58,21 +70,30 @@ typedef struct _BALL {	//공의 속성
 	clock_t MoveTime;	//이동 시간 간격
 	clock_t OldTime;	//이전 이동 시간
 }BALL;
+int g_StateTable[4][6] = {
+        {3,2,-1,-1,-1,4},
+        {-1,5,4,-1,-1,-1},
+        {-1,-1,1,0,5,-1},
+        {-1,-1,-1,-1,2,1}
+};
+
+int g_BlockState[6] = {3,2,1,0,5,4};
+int g_BlockCount = BC;
+int g_over = 0;
 
 BAR g_Bar;
 BALL g_Ball;
-int g_StateTable[4][6] = {
-	{3,2,-1,-1,-1,4},
-	{-1,5,4,-1,-1,-1},
-	{-1,-1,1,0,5,-1},
-	{-1,-1,-1,-1,2,1}
-};
+BLOCK g_Block[BC];
+USER user;
 
 void init() {
-	g_Bar.nY = 13;
+	user.point = 0;
+	user.win = 0;
+
+	g_Bar.nY = 30;
 	g_Bar.nX[0] = 30;
-	g_Bar.nX[1] = 32;
-	g_Bar.nX[2] = 34;
+	g_Bar.nX[1] = 34;
+	g_Bar.nX[2] = 38;
 	g_Bar.MoveTime = 80;
 	g_Bar.OldTime = clock();
 
@@ -89,7 +110,88 @@ void init() {
 	curs_set(FALSE);
 }
 
-int Collision(int nX,int nY) {
+int Search(int End,int nX,int nY) { //블록이 있는지 검사
+	int i;
+	for(i=0;i<End;i++) {
+		if(g_Block[i].nY == nY) {
+			if(g_Block[i].nX == nX || (g_Block[i].nX + 1) == nX || g_Block[i].nX == nX + 1 || (g_Block[i].nX + 1) == nX + 1) return 1; //상하좌우
+		}
+	}
+	return 0;
+}
+
+void SetBlock(int BlockCount) { //블록 셋팅
+	int nX,nY,i;
+
+	srand((unsigned int)time(NULL));
+	for(i=0;i<BlockCount;i++) {
+		g_Block[i].nLife = 1;
+
+		while(1) {
+			nX = rand() % 79;
+			nY = rand() % 11;
+
+			if(Search(i,nX,nY)==0) {
+				g_Block[i].nX = nX;
+				g_Block[i].nY = nY;
+				break;
+			}
+		}
+	}
+}
+
+void gameover() {
+	clear();
+	mvprintw(0,0,"=======================================");
+	mvprintw(1,0,"==============Game over================");
+	mvprintw(2,0,"==============score : %d===============",user.point);
+	mvprintw(3,0,"=======================================");
+	refresh();
+}
+
+int Collision(int nX,int nY) { //충돌
+	int i,count = 0;
+
+	//블록 충돌
+	for(i = 0; i<g_BlockCount ;i++) {
+		if(g_Block[i].nLife == 1) {
+			if(g_Block[i].nY == nY) {
+				if(g_Block[i].nX == nX || (g_Block[i].nX + 1) == nX || g_Block[i].nX == nX + 1 || (g_Block[i].nX + 1) == nX + 1) {
+					g_Ball.nDirect = g_BlockState[g_Ball.nDirect];
+					g_Block[i].nLife = 0;
+					user.point++;
+					count++;
+				}
+			}
+		}
+	}
+
+	if(count != 0) return 1;
+
+	//막대기 충돌
+	for(i = 0; i<3;i++) {
+		/*if(nY == g_Bar.nY) {
+		  if(nX >= g_Bar.nX[0] && nX <= (g_Bar.nX[2] + 3) || (nX + 1) >= g_Bar.nX[0] && (nX + 1) <= (g_Bar.nX[2] + 3)) {
+		  g_Ball.nDirect = g_BlockState[g_Ball.nDirect];
+		  return 1;
+		  }
+		  }*/
+		if(nY == g_Bar.nY) {
+			if(nX >= g_Bar.nX[0] && nX < g_Bar.nX[1] || (nX + 1) >= g_Bar.nX[0] && (nX + 1) < g_Bar.nX[1]) {
+				g_Ball.nDirect = RIGHT_TOP;
+			}else if(nX >= g_Bar.nX[1] && nX < g_Bar.nX[2] || (nX + 1) >= g_Bar.nX[1] && (nX + 1) < g_Bar.nX[2]) {
+				g_Ball.nDirect = g_BlockState[g_Ball.nDirect];
+			}else if(nX >= g_Bar.nX[2] && nX <= g_Bar.nX[2] + 3 || (nX + 1) >= g_Bar.nX[2] && (nX + 1) <= g_Bar.nX[2] + 3) {
+				g_Ball.nDirect = LEFT_TOP;
+			}
+			else {
+				g_over = 1;
+			}
+			return 1;
+		}
+	}
+
+	//테두리 충돌
 	if(nY < 0) {
 		g_Ball.nDirect = g_StateTable[0][g_Ball.nDirect];
 		return 1;
@@ -98,7 +200,7 @@ int Collision(int nX,int nY) {
 		g_Ball.nDirect = g_StateTable[1][g_Ball.nDirect];
 		return 1;
 	}
-	if(nY > 24) {
+	if(nY > 31) {
 		g_Ball.nDirect = g_StateTable[2][g_Ball.nDirect];
 		return 1;
 	}
@@ -114,39 +216,40 @@ void UpDate() {
 	if(g_Ball.nReady == 0) {
 		if(CurTime - g_Ball.OldTime > g_Ball.MoveTime) {
 			g_Ball.OldTime = CurTime;
+			int e = 1;
 
 			switch(g_Ball.nDirect){
 				case TOP :
-					if(Collision(g_Ball.nX,g_Ball.nY-1) == 0) {
+					if(Collision(g_Ball.nX,g_Ball.nY-e) == 0) {
 						g_Ball.nY--;
 					}
 					break;
 
 				case LEFT_TOP :
-					if(Collision(g_Ball.nX+1,g_Ball.nY-1) == 0) {
+					if(Collision(g_Ball.nX+e,g_Ball.nY-e) == 0) {
 						g_Ball.nX++;
 						g_Ball.nY--;
 					}
 					break;
 				case LEFT_DOWN :
-					if(Collision(g_Ball.nX+1,g_Ball.nY+1) == 0) {
+					if(Collision(g_Ball.nX+e,g_Ball.nY+e) == 0) {
 						g_Ball.nX++;
 						g_Ball.nY++;
 					}
 					break;
 				case DOWN :
-					if(Collision(g_Ball.nX,g_Ball.nY+1) == 0) {
+					if(Collision(g_Ball.nX,g_Ball.nY+e) == 0) {
 						g_Ball.nY++;
 					}
 					break;
 				case RIGHT_DOWN :
-					if(Collision(g_Ball.nX-1,g_Ball.nY+1) == 0) {
+					if(Collision(g_Ball.nX-e,g_Ball.nY+e) == 0) {
 						g_Ball.nX--;
 						g_Ball.nY++;
 					}
 					break;
 				case RIGHT_TOP :
-					if(Collision(g_Ball.nX-1,g_Ball.nY-1) == 0) {
+					if(Collision(g_Ball.nX-e,g_Ball.nY-e) == 0) {
 						g_Ball.nX--;
 						g_Ball.nY--;
 					}
@@ -160,9 +263,14 @@ void Render() {
 	int i;
 	//clear();
 	for(i=0;i<3;i++) {
-		mvprintw(g_Bar.nY,g_Bar.nX[i],"==");
+		mvprintw(g_Bar.nY,g_Bar.nX[i],"====");
 	}
-	mvprintw(g_Ball.nY,g_Ball.nX,"o");
+	for(i=0;i<BC;i++) {
+		if(g_Block[i].nLife == 1) {
+			mvprintw(g_Block[i].nY,g_Block[i].nX,"O");
+		}
+	}
+	mvprintw(g_Ball.nY,g_Ball.nX,"@");
 }
 
 int main(int argc,char* argv[]) {
@@ -171,6 +279,8 @@ int main(int argc,char* argv[]) {
 	pid_t pid;
 
 	init();
+	SetBlock(BC);
+
 
 	while(1) {
 		clear();
@@ -219,10 +329,16 @@ int main(int argc,char* argv[]) {
 					break;
 			}
 		}
+		if(g_over == 1) break; //게임 오버
 		UpDate();
-		usleep(100000);
+		usleep(150000);
 		Render();
 		refresh();
+
 	}
+	gameover(); //게임 오버 메세지
+	sleep(2);
+	getchar(); //아무키 입력시 종료
+	endwin();
 	return 0;
 }
