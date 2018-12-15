@@ -1,4 +1,4 @@
-# SProject
+﻿# SProject
 
 ## 시스템 프로그래밍 프로젝트
 - 정재민
@@ -23,7 +23,16 @@ encurse를 이용한 벽돌깨기 게임
 * * *
 
 ## 제안하는 어플리케이션의 구성도(그림 및 설명)
-![이미지2](https://github.com/jjeamin/SProject/blob/master/image/2.jpg)
+![메뉴1](https://github.com/jjeamin/SProject/blob/master/image/menu.jpg)
+![메뉴2](https://github.com/jjeamin/SProject/blob/master/image/menu2.jpg)
 
 * * *
+
+## 게임동작
+![게임](https://github.com/jjeamin/SProject/blob/master/image/game.jpg)
+
+방향키
+- 왼쪽 : J
+- 오른쪽 : L
+- 공발사 : K
 
