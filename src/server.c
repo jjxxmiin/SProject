@@ -91,47 +91,12 @@ int main(int argc, char *argv[]) {
 
 					if(check == 1) {
 						strcpy(client_user[num], rcv_msg);
-						printf("%s 님이 접속 하였습니다.\n", client_user[num]);
+						//printf("%s 님이 접속 하였습니다.\n", client_user[num]);
 						num++;
 						check++;
 						continue;
 					}
-
-					message = rcv_msg;
-/*
-					if(rcv_msg[0] == '@') {
-						message++;
-						if(strcmp(message, "list") == 0) {
-							strcpy(tmp, client_user[0]);
-							for(int i = 1; i < num; i++) {
-								strcat(strcat(tmp, " "), client_user[i]);
-							}
-							write(fd, tmp, sizeof(tmp));
-						}
-						else if(strcmp(message, "bye") == 0) {
-							close(fd);
-                                                	FD_CLR(fd, &readfds);
-                                                	if(nfds == fd) {
-                                                        	nfds--;
-                                                       		cnt--;
-								num--;
-                                                	}
-							printf("클라이언트 %d번 파일 디스크립터 해제\n", fd);
-						}
-						else if(strcmp(message, "stop") == 0) {
-							client_stop[idx] = fd;
-							idx++;
-						}
-						else if(strcmp(message, "continue") == 0) {
-							for(int i = 0; i < num; i++) {
-								if(client_stop[i] == fd) {
-									client_stop[i] = '\0';
-									idx--;
-								}
-							}
-						}
-					}
-*/
+					
 					if(nread < 0) {
 						printf("[Server] read error\n");
 						exit(1);
@@ -144,12 +109,9 @@ int main(int argc, char *argv[]) {
 							cnt--;
 							num--;
 						}
-						printf("Signal 로 인한 클라이언트 %d번 파일 디스크립터 해제\n", fd);
+						printf("클라이언트 %d번 파일 디스크립터 해제\n", fd);
 					}
 					else {
-						//if(rcv_msg[0] == '@')
-						//	continue;
-
 						sprintf(msg, "%s | %s", client_user[fd-4], rcv_msg);
 
 						for(int i = 0; i < num; i++) {
@@ -157,21 +119,6 @@ int main(int argc, char *argv[]) {
 								continue;
 							write(client_list[i], msg, sizeof(msg));
 						}
-
-						/*for(int i = 0; i < num; i++) {
-							if(client_list[i] == fd)
-								continue;
-							for(int j = 0; j < idx; j++) {
-								if(client_list[i] == client_stop[j]) {
-									brief++;
-								}
-							}
-							if(brief != 1) {
-								brief = 1;
-								continue;
-							}
-							write(client_list[i], msg, sizeof(msg));
-						}*/
 					}
 				}
 			}
