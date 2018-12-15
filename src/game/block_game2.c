@@ -6,6 +6,7 @@
 #include <time.h>
 #include <termios.h>
 #include <fcntl.h>
+#include <time.h>
 
 #define BC 50
 
@@ -139,13 +140,24 @@ void SetBlock(int BlockCount) { //블록 셋팅
 		}
 	}
 }
+void save() {
+	FILE *fd;
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+        fd  = fopen("score.txt","a");
+        fprintf(fd,"%d-%d-%d %d:%d:%d =  %d point",tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,tm.tm_hour, tm.tm_min, tm.tm_sec,user.point);
+        fclose(fd);
+}
 
 void gameover() {
+	save();
 	clear();
+	
 	mvprintw(0,0,"=======================================");
 	mvprintw(1,0,"==============Game over================");
 	mvprintw(2,0,"==============score : %d===============",user.point);
 	mvprintw(3,0,"=======================================");
+	
 	refresh();
 }
 
@@ -170,12 +182,6 @@ int Collision(int nX,int nY) { //충돌
 
 	//막대기 충돌
 	for(i = 0; i<3;i++) {
-		/*if(nY == g_Bar.nY) {
-		  if(nX >= g_Bar.nX[0] && nX <= (g_Bar.nX[2] + 3) || (nX + 1) >= g_Bar.nX[0] && (nX + 1) <= (g_Bar.nX[2] + 3)) {
-		  g_Ball.nDirect = g_BlockState[g_Ball.nDirect];
-		  return 1;
-		  }
-		  }*/
 		if(nY == g_Bar.nY) {
 			if(nX >= g_Bar.nX[0] && nX < g_Bar.nX[1] || (nX + 1) >= g_Bar.nX[0] && (nX + 1) < g_Bar.nX[1]) {
 				g_Ball.nDirect = RIGHT_TOP;

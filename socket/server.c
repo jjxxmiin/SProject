@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -12,12 +13,7 @@
 #include <sys/ioctl.h>
 
 #define BUFSIZE 1024
-/*
-struct clientInfo {
-	char name[20];
-	char msg[BUFSIZE];
-};
-*/
+
 int server_sockfd;
 
 static void sigint_handler(int signo) {
@@ -34,12 +30,12 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_in client_address;
 	int nfds, fd;
 	fd_set readfds, testfds;
-
-	//struct clientInfo info;
-	int cnt = 0, num = 0, idx = 0;
-	int client_list[10];
+	int nread, except;
+	int cnt = 0, num = 0, check = 1, idx = 1, brief = 1;
+	char *message;
+	int client_list[10], client_stop[10];
 	char client_user[10][20];
-	char snd_msg[BUFSIZE], rcv_msg[BUFSIZE], tmp[BUFSIZE];
+	char snd_msg[BUFSIZE], rcv_msg[BUFSIZE], msg[BUFSIZE], tmp[BUFSIZE];
 
 	if(signal(SIGINT, sigint_handler) == SIG_ERR) {
 		fprintf(stderr, "Cannot handle SIGINT!!!\n");
@@ -57,7 +53,7 @@ int main(int argc, char *argv[]) {
 
 	listen(server_sockfd, 5); // 대기열 설정하고 연결 요청 대기
 
-	printf("[Server] server waiting\n");
+	printf("Server waiting...\n");
 
 	signal(SIGCHLD, SIG_IGN);
 
@@ -67,8 +63,6 @@ int main(int argc, char *argv[]) {
 	nfds = server_sockfd;
 
 	while(1) {
-		int nread;
-
 		testfds = readfds;
 
 		if(select(nfds+1, &testfds, (fd_set *)0, (fd_set *)0, (struct timeval *)0) < 1) {
@@ -83,7 +77,8 @@ int main(int argc, char *argv[]) {
 					client_len = sizeof(client_address);
 					client_sockfd = accept(server_sockfd, (struct sockaddr *)&client_address, &client_len); // 클라이언트의 연결 요청 수락
 					FD_SET(client_sockfd, &readfds);
-					printf("[Server] 새로운 클라이언트 %d번 파일 디스크립터 접속\n", client_sockfd);
+					printf("새로운 클라이언트 %d번 파일 디스크립터 접속\n", client_sockfd);
+					check = 1;
 					client_list[cnt] = client_sockfd;
 					cnt++;
 					nfds++;
@@ -94,16 +89,49 @@ int main(int argc, char *argv[]) {
 				else {
 					nread = read(fd, rcv_msg, sizeof(rcv_msg));
 
-					while(1) {
-						client_user[num][idx] = rcv_msg[idx+1];
-						idx++;
-						if(rcv_msg[idx+1] == ']')
-							break;
+					if(check == 1) {
+						strcpy(client_user[num], rcv_msg);
+						printf("%s 님이 접속 하였습니다.\n", client_user[num]);
+						num++;
+						check++;
+						continue;
 					}
-					client_user[num][idx] = '\0';
-					idx = 0;
-					//printf("[Server] %s 님이 접속 되었습니다.\n", client_user[num]);
 
+					message = rcv_msg;
+/*
+					if(rcv_msg[0] == '@') {
+						message++;
+						if(strcmp(message, "list") == 0) {
+							strcpy(tmp, client_user[0]);
+							for(int i = 1; i < num; i++) {
+								strcat(strcat(tmp, " "), client_user[i]);
+							}
+							write(fd, tmp, sizeof(tmp));
+						}
+						else if(strcmp(message, "bye") == 0) {
+							close(fd);
+                                                	FD_CLR(fd, &readfds);
+                                                	if(nfds == fd) {
+                                                        	nfds--;
+                                                       		cnt--;
+								num--;
+                                                	}
+							printf("클라이언트 %d번 파일 디스크립터 해제\n", fd);
+						}
+						else if(strcmp(message, "stop") == 0) {
+							client_stop[idx] = fd;
+							idx++;
+						}
+						else if(strcmp(message, "continue") == 0) {
+							for(int i = 0; i < num; i++) {
+								if(client_stop[i] == fd) {
+									client_stop[i] = '\0';
+									idx--;
+								}
+							}
+						}
+					}
+*/
 					if(nread < 0) {
 						printf("[Server] read error\n");
 						exit(1);
@@ -116,15 +144,34 @@ int main(int argc, char *argv[]) {
 							cnt--;
 							num--;
 						}
-						printf("[Server] 클라이언트 %d번 파일 디스크립터 해제\n", fd);
+						printf("Signal 로 인한 클라이언트 %d번 파일 디스크립터 해제\n", fd);
 					}
 					else {
-						//sprintf(tmp, "[%s] : %s", client_user[num], rcv_msg);
-						for(int i = 0; i < cnt; i++) {
-							if(client_list[i] == client_sockfd)
+						//if(rcv_msg[0] == '@')
+						//	continue;
+
+						sprintf(msg, "%s | %s", client_user[fd-4], rcv_msg);
+
+						for(int i = 0; i < num; i++) {
+							if(client_list[i] == fd)
 								continue;
-							write(client_list[i], rcv_msg, sizeof(rcv_msg));
+							write(client_list[i], msg, sizeof(msg));
 						}
+
+						/*for(int i = 0; i < num; i++) {
+							if(client_list[i] == fd)
+								continue;
+							for(int j = 0; j < idx; j++) {
+								if(client_list[i] == client_stop[j]) {
+									brief++;
+								}
+							}
+							if(brief != 1) {
+								brief = 1;
+								continue;
+							}
+							write(client_list[i], msg, sizeof(msg));
+						}*/
 					}
 				}
 			}

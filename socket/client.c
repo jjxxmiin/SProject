@@ -1,32 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <wait.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #define BUFSIZE 1024
-/*
-struct clientInfo {
-	char name[20];
-	char msg[BUFSIZE];
-};
-*/
+
 int main(int argc, char *argv[]) {
-	int sockfd;
+	int sockfd, nfds;
 	int len, n;
 	struct sockaddr_in address;
 	fd_set readfds, testfds;
-	int nfds;
-
-	pid_t pid;
-	//struct clientInfo info;
+	int number;
+	pid_t pid, status;
 	char name[20], msg[BUFSIZE];
 	char snd_msg[BUFSIZE], rcv_msg[BUFSIZE];
 
-	if(argc != 2) {
+	if(argc != 1) {
 		printf("argc error\n");
 		exit(1);
 	}
@@ -43,71 +37,78 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	} // 서버의 명명된 소켓과 연결 시도
 
-	strcpy(name, argv[1]);
-	//strcpy(info.name, argv[1]);
-	//strcpy(info.msg, "");
-	//write(sockfd, (struct clientInfo *)&info, sizeof(info));
-
-/*	
-	FD_ZERO(&readfds);
-	FD_SET(sockfd, &readfds);
-	FD_SET(0, &readfds);
-
-	nfds = sockfd;
+	printf("==================================================\n");
+	printf("벽돌깨기 게임!!!\n");
+	printf("1.참여\t2.종료\n");
+	printf("==================================================\n");
+	
+	printf("닉네임을 입력하세요 : ");
+	fgets(name, sizeof(name), stdin);
+	name[strlen(name)-1] = '\0';
+	write(sockfd, name, sizeof(name));
 
 	while(1) {
-		testfds = readfds;
+		printf("선택하세요 : ");
+        	scanf("%d", &number);
 
-		if(select(nfds+1, &testfds, (fd_set *)0, (fd_set *)0, (struct timeval *)0) < 0) {
-			printf("select error\n");
+		switch(number) {
+			case 1:
+				printf("Game Start\n");
+
+				pid = fork();
+
+				if(pid == -1) {
+					printf("[Client] fork error\n");
+					exit(1);
+				}
+				if(pid == 0) {
+					if(execl("/home/kim/git/SProject/src/game/block_game2", "./block_game2", NULL) == -1) {
+						printf("[Client] execl error\n");
+					}
+				}
+				else {
+					wait(&status);
+					sleep(1);
+					printf("Game End\n");
+				}
+
+				break;
+			case 2:
+				printf("종료합니다.\n");
+				close(sockfd);
+				exit(1);
+				break;
+			default :
+				break;
+		}
+	}
+/*
+	while(1) {
+		if(pid == -1) {
+			printf("[Client] fork error\n");
 			exit(1);
 		}
 
-		if(FD_ISSET(sockfd, &testfds)) {
-			n = read(sockfd, rcv_msg, BUFSIZE);
-			if(n == 0) {
-				printf("서버와 접속이 끊겼습니다.\n");
-				break;
-			}
-			printf("[Client] rcv_msg: %s\n", rcv_msg);
+		if(pid == 0) {
+		//while(1) {
+			//printf("전송할 메시지를 입력하세요 : ");
+			//fgets(snd_msg, sizeof(snd_msg), stdin);
+			//snd_msg[strlen(snd_msg)-1] = '\0';
+			//write(sockfd, snd_msg, sizeof(snd_msg));
+		//}
 		}
-		else if(FD_ISSET(0, &testfds)) {
-			printf("전송할 메시지를 입력하세요 : ");
-			fgets(snd_msg, sizeof(snd_msg), stdin);
-			snd_msg[strlen(snd_msg)-1] = '\0';
-			sprintf(msg, "[%s] : %s", name, snd_msg);
-			write(sockfd, msg, sizeof(msg));
-		}
-	}
-*/	
-
-	pid = fork();
-
-	if(pid == -1) {
-		printf("fork error\n");
-		exit(1);
-	}
-
-	if(pid == 0) {
-		while(1) {
-			printf("전송할 메시지를 입력하세요 : ");
-			fgets(snd_msg, sizeof(snd_msg), stdin);
-			snd_msg[strlen(snd_msg)-1] = '\0';
-			sprintf(msg, "[%s] : %s", name, snd_msg);
-			write(sockfd, msg, sizeof(msg));
+		else {
+		//while(1) {
+			//n = read(sockfd, rcv_msg, BUFSIZE);
+			//if(n == 0) {
+			//	printf("서버와 접속이 끊겼습니다.\n");
+			//	break;
+			//}
+			//printf("%s\n", rcv_msg);
+		//}
 		}
 	}
-	else {
-		while(1) {
-			n = read(sockfd, rcv_msg, BUFSIZE);
-			if(n == 0) {
-				printf("[Client] 서버와 접속이 끊겼습니다.\n");
-				break;
-			}
-			printf("%s\n", rcv_msg);
-		}
-	}
-
+*/
 	close(sockfd);
 
 	return 0;
