@@ -23,13 +23,13 @@ encurse를 이용한 벽돌깨기 게임
 * * *
 
 ## 제안하는 어플리케이션의 구성도(그림 및 설명)
-![메뉴1](https://github.com/jjeamin/SProject/blob/master/image/menu.jpg)
-![메뉴2](https://github.com/jjeamin/SProject/blob/master/image/menu2.jpg)
+![메뉴1](https://github.com/jjeamin/SProject/blob/master/image/menu.png)
+![메뉴2](https://github.com/jjeamin/SProject/blob/master/image/menu2.png)
 
 * * *
 
 ## 게임동작
-![게임](https://github.com/jjeamin/SProject/blob/master/image/game.jpg)
+![게임](https://github.com/jjeamin/SProject/blob/master/image/game.PNG)
 
 방향키
 - 왼쪽 : J
