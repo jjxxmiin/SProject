@@ -145,7 +145,7 @@ void save() {
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);
         fd  = fopen("score.txt","a");
-        fprintf(fd,"%d-%d-%d %d:%d:%d =  %d point",tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,tm.tm_hour, tm.tm_min, tm.tm_sec,user.point);
+        fprintf(fd,"%d-%d-%d %d:%d:%d =  %d point \n",tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,tm.tm_hour, tm.tm_min, tm.tm_sec,user.point);
         fclose(fd);
 }
 

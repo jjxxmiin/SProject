@@ -36,7 +36,7 @@ int main(){
 				if(issuccess_login <= size){
 					printf("%s님 환영합니다.\n\n", use[issuccess_login].id);
 
-					while(1){
+					//while(1){
 						printf("1. single play\n");
 						printf("2. multi play\n");
 						printf("3. 게임 종료\n");
@@ -53,7 +53,7 @@ int main(){
 							case 3:
 								exit(1);
 						}
-					}
+					//}
 				}
 				else
 					printf("로그인에 실패하셨습니다.\n");
