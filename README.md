@@ -1,23 +1,17 @@
 ﻿# SProject
 
-## 물음표조 시스템 프로그래밍 프로젝트 입니다.
+## 시스템 프로그래밍 프로젝트
 - 정재민
 - 김형훈
 - 이종학
 
-
-# 서로 경쟁하는 벽돌게임
-
-* * *
-
 ## 프로젝트 제목
-리눅스 소켓을 이용한 벽돌게임
+encurse를 이용한 벽돌깨기 게임
 
 * * *
 
 ## 프로젝트 개요(프로젝트 선정 동기, 내용, 기대효과 및 활용방안)
-옛날부터 리눅스에서 게임을 만드는 것을 하고 싶었고 그래서 결정한 게임이 벽돌깨기 입니다.
-벽돌깨기를 혼자 하는 것이 아니고 같이 채팅도하고 경쟁도 하면 서 더욱 더 벽돌깨기 게임을 재미있게 할 수 있다고 생각 됩니다.
+옛날부터 리눅스에서 게임을 만드는 것을 하고 싶었고 어떤 게임을 결정 할지 생각 하다가 벽돌깨기 게임을 생각하게 되었습니다
 이 벽돌깨기는 단순히 벽돌을 깨는 게임이지만 시간대마다 게임의 성적을 측정해서 데이터를 저장합니다.
 그리고 이 데이터베이스를 나중에 다른 게임을 만들때 적용한다면 게임산업 발전을 기여할 것 입니다.
 
@@ -29,10 +23,16 @@
 * * *
 
 ## 제안하는 어플리케이션의 구성도(그림 및 설명)
-![이미지1](https://github.com/jjeamin/SProject/blob/master/image/1.jpg)
-![이미지2](https://github.com/jjeamin/SProject/blob/master/image/2.jpg)
-![이미지3](https://github.com/jjeamin/SProject/blob/master/image/3.jpg)
+![메뉴1](https://github.com/jjeamin/SProject/blob/master/image/menu.png)
+![메뉴2](https://github.com/jjeamin/SProject/blob/master/image/menu2.png)
 
 * * *
 
-+
+## 게임동작
+![게임](https://github.com/jjeamin/SProject/blob/master/image/game.PNG)
+
+방향키
+- 왼쪽 : J
+- 오른쪽 : L
+- 공발사 : K
+
