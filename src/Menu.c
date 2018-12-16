@@ -64,6 +64,7 @@ int main(){
 						switch(start){
 							case 1:
 								startgame();
+								system("clear");
 								while(1){
 									char se = '\0';
 									printf("========================================\n");
